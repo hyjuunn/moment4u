@@ -271,49 +271,49 @@ const CreateDiaryPage: React.FC = () => {
   };
 
   const handleConfirmDelete = async () => {
-    try {
-      // Create an array to track failed deletions
-      const failedDeletions: string[] = [];
-      
-      // Log the stories we're about to delete
-      console.log('Selected stories for deletion:', Array.from(selectedStories));
-      console.log('Current stories:', stories);
-      
-      // Delete stories one by one to handle errors individually
-      for (const storyId of Array.from(selectedStories)) {
-        try {
-          console.log('Attempting to delete story with ID:', storyId);
-          await deleteStory(storyId);
-          console.log('Successfully deleted story from API:', storyId);
-          
-          // Update stories list immediately after successful deletion
-          setStories(prev => {
-            console.log('Updating stories list after deletion. Current:', prev);
-            const updated = prev.filter(story => story.id !== storyId);
-            console.log('Updated stories list:', updated);
-            return updated;
-          });
-        } catch (error) {
-          console.error(`Failed to delete story ${storyId}:`, error);
-          failedDeletions.push(storyId);
-        }
-      }
-      
-      // Show error message if any deletions failed
-      if (failedDeletions.length > 0) {
-        alert(`Failed to delete ${failedDeletions.length} stories. Please try again later.`);
-      }
-      
-      // Refresh the stories list from the server
-      await fetchStories();
-    } catch (error) {
-      console.error('Error in delete operation:', error);
-      alert('An error occurred while deleting stories. Please try again.');
-    }
+          try {
+            // Create an array to track failed deletions
+            const failedDeletions: string[] = [];
+            
+            // Log the stories we're about to delete
+            console.log('Selected stories for deletion:', Array.from(selectedStories));
+            console.log('Current stories:', stories);
+            
+            // Delete stories one by one to handle errors individually
+            for (const storyId of Array.from(selectedStories)) {
+              try {
+                console.log('Attempting to delete story with ID:', storyId);
+                await deleteStory(storyId);
+                console.log('Successfully deleted story from API:', storyId);
+                
+                // Update stories list immediately after successful deletion
+                setStories(prev => {
+                  console.log('Updating stories list after deletion. Current:', prev);
+                  const updated = prev.filter(story => story.id !== storyId);
+                  console.log('Updated stories list:', updated);
+                  return updated;
+                });
+              } catch (error) {
+                console.error(`Failed to delete story ${storyId}:`, error);
+                failedDeletions.push(storyId);
+              }
+            }
+            
+            // Show error message if any deletions failed
+            if (failedDeletions.length > 0) {
+              alert(`Failed to delete ${failedDeletions.length} stories. Please try again later.`);
+            }
+            
+            // Refresh the stories list from the server
+            await fetchStories();
+          } catch (error) {
+            console.error('Error in delete operation:', error);
+            alert('An error occurred while deleting stories. Please try again.');
+          }
 
     // Clear selected stories and exit delete mode
     setSelectedStories(new Set());
-    setIsDeleteMode(false);
+      setIsDeleteMode(false);
     setShowDeleteConfirm(false);
   };
 
@@ -386,7 +386,7 @@ const CreateDiaryPage: React.FC = () => {
         position: 'relative',
         zIndex: 2
       }}>
-        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet" />
         <div style={{
           display: 'flex',
           flexDirection: 'column',
@@ -409,7 +409,7 @@ const CreateDiaryPage: React.FC = () => {
               '0 0 15px rgba(255, 182, 193, 0.5)'
           }}>
             Story Dashboard
-          </h1>
+        </h1>
           <div style={{
             width: '250px',
             height: '2px',
@@ -564,10 +564,10 @@ const CreateDiaryPage: React.FC = () => {
                 <span style={{ animation: 'ellipsis 1.5s infinite' }}>...</span>
               </div>
             )}
-          </div>
+        </div>
 
-          <style>
-            {`
+        <style>
+          {`
               @keyframes fadeInOut {
                 0%, 100% { opacity: 0.7; }
                 50% { opacity: 1; }
@@ -582,15 +582,15 @@ const CreateDiaryPage: React.FC = () => {
               @keyframes slideDown {
                 0% {
                   transform: translate(-50%, -100%);
-                  opacity: 0;
+                opacity: 0;
                 }
                 100% {
                   transform: translate(-50%, 0);
-                  opacity: 1;
+                opacity: 1;
                 }
-              }
-            `}
-          </style>
+            }
+          `}
+        </style>
 
           <input
             type="file"
