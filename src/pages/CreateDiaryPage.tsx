@@ -1,11 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../styles/global.css';
 import { useNavigate } from 'react-router-dom';
+import StoryGrid from '../components/StoryGrid';
+import { 
+  uploadImages, 
+  getAllStories, 
+  deleteStory, 
+  Story, 
+  ImageResponse, 
+  getImages, 
+  analyzeImagesSequentially,
+  generateStory,
+  StoryGenerationResponse,
+  createStory 
+} from '../services/api';
 
 const CreateDiaryPage: React.FC = () => {
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const [isFading, setIsFading] = useState(false);
+  const [stories, setStories] = useState<Story[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState<ImageResponse[]>([]);
+  const [combinedDescription, setCombinedDescription] = useState<string>('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isGeneratingStory, setIsGeneratingStory] = useState(false);
+  const [generatedStory, setGeneratedStory] = useState<StoryGenerationResponse | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetchStories();
+    fetchImages();
+  }, []);
+
+  const fetchStories = async () => {
+    try {
+      const fetchedStories = await getAllStories();
+      setStories(fetchedStories);
+    } catch (error) {
+      console.error('Failed to fetch stories:', error);
+    }
+  };
+
+  const fetchImages = async () => {
+    try {
+      const images = await getImages();
+      setUploadedImages(images);
+      console.log('Fetched images:', images);
+    } catch (error) {
+      console.error('Failed to fetch images:', error);
+    }
+  };
 
   useEffect(() => {
     let fadeTimer: NodeJS.Timeout;
@@ -30,28 +75,129 @@ const CreateDiaryPage: React.FC = () => {
     };
   }, [showPopup]);
 
+  const handleCreateStory = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      setIsUploading(true);
+      const uploadedImages = await uploadImages(Array.from(files));
+      console.log('Successfully uploaded images:', uploadedImages);
+      setUploadedImages(uploadedImages);
+
+      // Start analyzing images
+      setIsAnalyzing(true);
+      const description = await analyzeImagesSequentially(uploadedImages);
+      setCombinedDescription(description);
+      setIsAnalyzing(false);
+
+      // Generate story
+      setIsGeneratingStory(true);
+      const storyResult = await generateStory(description);
+      setGeneratedStory(storyResult);
+      setIsGeneratingStory(false);
+
+      // Save the story
+      if (storyResult.title && storyResult.story && uploadedImages.length > 0) {
+        const imageUrls = uploadedImages.map(img => img.image_path);
+        const storyId = uploadedImages[0].story_id;
+        await createStory(storyResult.title, storyResult.story, imageUrls, storyId);
+        console.log('Story saved successfully!');
+      }
+    } catch (error) {
+      console.error('Failed to generate story:', error);
+      // Handle error appropriately
+    } finally {
+      setIsUploading(false);
+      if (event.target) {
+        event.target.value = ''; // Reset file input
+      }
+    }
+  };
+
+  const handleDeleteStory = async (storyId: string) => {
+    try {
+      await deleteStory(storyId);
+      setStories(prev => prev.filter(story => story.id !== storyId));
+    } catch (error) {
+      console.error('Failed to delete story:', error);
+      alert('Failed to delete story. Please try again.');
+    }
+  };
+
+  const renderDescription = () => {
+    if (isAnalyzing) {
+      return <p>Analyzing images...</p>;
+    }
+    if (isGeneratingStory) {
+      return <p>Generating story...</p>;
+    }
+    return (
+      <>
+        {combinedDescription && (
+          <div style={{ marginBottom: '20px' }}>
+            <h3>Image Analysis:</h3>
+            <p>{combinedDescription}</p>
+          </div>
+        )}
+        {generatedStory && (
+          <div>
+            {generatedStory.title && (
+              <h2 style={{ 
+                color: '#FFB6C1',
+                marginTop: '20px',
+                marginBottom: '10px',
+                fontSize: '24px'
+              }}>
+                {generatedStory.title}
+              </h2>
+            )}
+            <h3 style={{ 
+              color: '#87CEEB',
+              marginTop: '20px'
+            }}>Generated Story:</h3>
+            <p style={{
+              color: '#FFB6C1',
+              whiteSpace: 'pre-wrap',
+              lineHeight: '1.6',
+              marginTop: '10px'
+            }}>{generatedStory.story}</p>
+          </div>
+        )}
+      </>
+    );
+  };
+
   return (
     <>
       <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet" />
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'flex-start',
         alignItems: 'center',
         minHeight: '100vh',
         width: '100%',
         background: 'black',
         color: 'white',
-        padding: '0 2rem',
+        position: 'relative',
+        overflow: 'auto',
+        padding: '1rem',
+        boxSizing: 'border-box',
       }}>
         <h1 style={{
-          fontSize: '3.5rem',
+          fontSize: 'clamp(2rem, 5vw, 3.5rem)',
           fontWeight: 'bold',
-          marginTop: '2rem',
-          marginBottom: '2rem',
+          margin: '1rem 0 3rem 0',
           fontFamily: "'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
           display: 'flex',
           gap: '15px',
+          textAlign: 'center',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
         }}>
           <span style={{
             color: '#87CEEB',
@@ -78,20 +224,32 @@ const CreateDiaryPage: React.FC = () => {
             Dashboard
           </span>
         </h1>
-        <div style={{ 
-          width: '80%', 
-          maxWidth: '1200px', 
-          position: 'relative',
+
+        <div style={{
           display: 'flex',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          width: '100%',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0',
+          position: 'relative',
+          flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+          gap: '1rem',
+          boxSizing: 'border-box',
         }}>
+          {/* Button Container */}
           <div style={{
-            position: 'absolute',
-            left: '-11rem',
-            top: '2rem',
+            width: window.innerWidth < 768 ? '100%' : '140px',
+            marginRight: window.innerWidth < 768 ? '0' : '1rem',
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: window.innerWidth < 768 ? 'row' : 'column',
             gap: '1rem',
+            alignSelf: 'flex-start',
+            position: window.innerWidth < 768 ? 'relative' : 'sticky',
+            top: '2rem',
+            flexWrap: window.innerWidth < 768 ? 'wrap' : 'nowrap',
+            justifyContent: window.innerWidth < 768 ? 'center' : 'flex-start',
+            boxSizing: 'border-box',
           }}>
             <button
               onClick={() => navigate('/')}
@@ -116,6 +274,7 @@ const CreateDiaryPage: React.FC = () => {
                 `,
                 fontFamily: 'Quicksand, sans-serif',
                 letterSpacing: '0.5px',
+                width: '100%',
               }}
               onMouseOver={(e) => {
                 e.currentTarget.style.boxShadow = `
@@ -171,6 +330,7 @@ const CreateDiaryPage: React.FC = () => {
                 `,
                 fontFamily: 'Quicksand, sans-serif',
                 letterSpacing: '0.5px',
+                width: '100%',
               }}
               onMouseOver={(e) => {
                 e.currentTarget.style.boxShadow = `
@@ -204,6 +364,7 @@ const CreateDiaryPage: React.FC = () => {
               Language
             </button>
             <button
+              onClick={handleCreateStory}
               style={{
                 padding: '0.6rem 1.2rem',
                 background: 'rgba(57, 255, 20, 0.15)',
@@ -212,7 +373,7 @@ const CreateDiaryPage: React.FC = () => {
                 borderRadius: '10px',
                 fontSize: '1.2rem',
                 fontWeight: '500',
-                cursor: 'pointer',
+                cursor: isUploading ? 'not-allowed' : 'pointer',
                 transition: 'all 0.3s ease',
                 boxShadow: `
                   0 0 2px #39FF14,
@@ -225,39 +386,59 @@ const CreateDiaryPage: React.FC = () => {
                 `,
                 fontFamily: 'Quicksand, sans-serif',
                 letterSpacing: '0.5px',
+                opacity: isUploading ? 0.7 : 1,
+                width: '100%',
               }}
+              disabled={isUploading}
               onMouseOver={(e) => {
-                e.currentTarget.style.boxShadow = `
-                  0 0 3px #39FF14,
-                  0 0 6px #39FF14,
-                  0 0 9px #32CD32
-                `;
-                e.currentTarget.style.textShadow = `
-                  0 0 2px #39FF14,
-                  0 0 4px #32CD32
-                `;
-                e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.background = 'rgba(57, 255, 20, 0.25)';
-                e.currentTarget.style.letterSpacing = '1px';
+                if (!isUploading) {
+                  e.currentTarget.style.boxShadow = `
+                    0 0 3px #39FF14,
+                    0 0 6px #39FF14,
+                    0 0 9px #32CD32
+                  `;
+                  e.currentTarget.style.textShadow = `
+                    0 0 2px #39FF14,
+                    0 0 4px #32CD32
+                  `;
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.background = 'rgba(57, 255, 20, 0.25)';
+                  e.currentTarget.style.letterSpacing = '1px';
+                }
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.boxShadow = `
-                  0 0 2px #39FF14,
-                  0 0 4px #39FF14,
-                  0 0 6px #32CD32
-                `;
-                e.currentTarget.style.textShadow = `
-                  0 0 1px #39FF14,
-                  0 0 2px #32CD32
-                `;
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.background = 'rgba(57, 255, 20, 0.15)';
-                e.currentTarget.style.letterSpacing = '0.5px';
+                if (!isUploading) {
+                  e.currentTarget.style.boxShadow = `
+                    0 0 2px #39FF14,
+                    0 0 4px #39FF14,
+                    0 0 6px #32CD32
+                  `;
+                  e.currentTarget.style.textShadow = `
+                    0 0 1px #39FF14,
+                    0 0 2px #32CD32
+                  `;
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.background = 'rgba(57, 255, 20, 0.15)';
+                  e.currentTarget.style.letterSpacing = '0.5px';
+                }
               }}
             >
-              Create Story
+              {isUploading ? 'Creating...' : 'Create Story'}
             </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              multiple
+              accept="image/*"
+              style={{ display: 'none' }}
+            />
             <button
+              onClick={() => {
+                if (stories.length > 0 && window.confirm('Are you sure you want to delete all stories?')) {
+                  stories.forEach(story => handleDeleteStory(story.id));
+                }
+              }}
               style={{
                 padding: '0.6rem 1.2rem',
                 background: 'rgba(255, 0, 0, 0.15)',
@@ -279,6 +460,7 @@ const CreateDiaryPage: React.FC = () => {
                 `,
                 fontFamily: 'Quicksand, sans-serif',
                 letterSpacing: '0.5px',
+                width: '100%',
               }}
               onMouseOver={(e) => {
                 e.currentTarget.style.boxShadow = `
@@ -312,11 +494,15 @@ const CreateDiaryPage: React.FC = () => {
               Delete Story
             </button>
           </div>
+
+          {/* Main Content Container */}
           <div style={{
-            width: '90%',
-            minHeight: '70vh',
+            flex: '1',
+            maxWidth: '800px',
+            minHeight: '60vh',
+            maxHeight: window.innerWidth < 768 ? '100%' : '75vh',
             borderRadius: '20px',
-            padding: '2rem',
+            padding: '1.5rem',
             boxShadow: `
               0 0 2px #fff,
               0 0 4px #fff,
@@ -330,6 +516,10 @@ const CreateDiaryPage: React.FC = () => {
             alignItems: 'center',
             marginBottom: '2rem',
             position: 'relative',
+            overflowY: 'auto',
+            scrollBehavior: 'smooth',
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            boxSizing: 'border-box',
           }}>
             {showPopup && (
               <div
@@ -363,7 +553,27 @@ const CreateDiaryPage: React.FC = () => {
                 We only support Korean at this time.
               </div>
             )}
-            {/* Story posts will be added here */}
+            {stories.length === 0 ? (
+              <div style={{
+                textAlign: 'center',
+                padding: '2rem',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '1.2rem',
+                fontFamily: 'Quicksand, sans-serif'
+              }}>
+                <h3 style={{
+                  color: '#FFB6C1',
+                  marginBottom: '1rem',
+                  textShadow: '0 0 10px rgba(255, 182, 193, 0.5)'
+                }}>No stories yet</h3>
+                <p>Create your first story by clicking the "Create Story" button!</p>
+              </div>
+            ) : (
+              <>
+                <StoryGrid stories={stories} />
+                {renderDescription()}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -388,6 +598,25 @@ const CreateDiaryPage: React.FC = () => {
               opacity: 0;
               transform: translate(-50%, -40%);
             }
+          }
+
+          /* Custom scrollbar styles */
+          div::-webkit-scrollbar {
+            width: 8px;
+          }
+
+          div::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+          }
+
+          div::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+          }
+
+          div::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
           }
         `}
       </style>
