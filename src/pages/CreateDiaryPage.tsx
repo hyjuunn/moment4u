@@ -1,7 +1,10 @@
 import React from 'react';
 import '../styles/global.css';
+import { useNavigate } from 'react-router-dom';
 
 const CreateDiaryPage: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <div style={{
       display: 'flex',
@@ -55,69 +58,169 @@ const CreateDiaryPage: React.FC = () => {
         display: 'flex',
         justifyContent: 'center'
       }}>
-        <button
-          style={{
-            position: 'absolute',
-            left: '-11rem',
-            top: '2rem',
-            padding: '0.6rem 1.2rem',
-            background: 'rgba(255, 192, 203, 0.15)',
-            color: '#ff69b4',
-            border: '2px solid #ff69b4',
-            borderRadius: '10px',
-            fontSize: '1.2rem',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: `
-              0 0 2px #ff69b4,
-              0 0 4px #ff69b4,
-              0 0 8px #ff69b4,
-              0 0 12px #ff1493
-            `,
-            textShadow: `
-              0 0 1px #ff69b4,
-              0 0 2px #ff69b4,
-              0 0 4px #ff69b4,
-              0 0 8px #ff1493
-            `,
-            fontFamily: "'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.boxShadow = `
-              0 0 4px #ff69b4,
-              0 0 8px #ff69b4,
-              0 0 16px #ff69b4,
-              0 0 24px #ff1493
-            `;
-            e.currentTarget.style.textShadow = `
-              0 0 2px #ff69b4,
-              0 0 4px #ff69b4,
-              0 0 8px #ff69b4,
-              0 0 16px #ff1493
-            `;
-            e.currentTarget.style.transform = 'scale(1.05)';
-            e.currentTarget.style.background = 'rgba(255, 192, 203, 0.25)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.boxShadow = `
-              0 0 2px #ff69b4,
-              0 0 4px #ff69b4,
-              0 0 8px #ff69b4,
-              0 0 12px #ff1493
-            `;
-            e.currentTarget.style.textShadow = `
-              0 0 1px #ff69b4,
-              0 0 2px #ff69b4,
-              0 0 4px #ff69b4,
-              0 0 8px #ff1493
-            `;
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.background = 'rgba(255, 192, 203, 0.15)';
-          }}
-        >
-          Create Story
-        </button>
+        <div style={{
+          position: 'absolute',
+          left: '-11rem',
+          top: '2rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+        }}>
+          <button
+            style={{
+              padding: '0.6rem 1.2rem',
+              background: 'rgba(57, 255, 20, 0.15)',
+              color: '#39FF14',
+              border: '2px solid #39FF14',
+              borderRadius: '10px',
+              fontSize: '1.2rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: `
+                0 0 2px #39FF14,
+                0 0 4px #39FF14,
+                0 0 6px #32CD32
+              `,
+              textShadow: `
+                0 0 1px #39FF14,
+                0 0 2px #32CD32
+              `,
+              fontFamily: "'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.boxShadow = `
+                0 0 3px #39FF14,
+                0 0 6px #39FF14,
+                0 0 9px #32CD32
+              `;
+              e.currentTarget.style.textShadow = `
+                0 0 2px #39FF14,
+                0 0 4px #32CD32
+              `;
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.background = 'rgba(57, 255, 20, 0.25)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.boxShadow = `
+                0 0 2px #39FF14,
+                0 0 4px #39FF14,
+                0 0 6px #32CD32
+              `;
+              e.currentTarget.style.textShadow = `
+                0 0 1px #39FF14,
+                0 0 2px #32CD32
+              `;
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.background = 'rgba(57, 255, 20, 0.15)';
+            }}
+          >
+            Create Story
+          </button>
+          <button
+            style={{
+              padding: '0.6rem 1.2rem',
+              background: 'rgba(255, 0, 0, 0.15)',
+              color: '#ff4040',
+              border: '2px solid #ff4040',
+              borderRadius: '10px',
+              fontSize: '1.2rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: `
+                0 0 2px #ff4040,
+                0 0 4px #ff4040,
+                0 0 6px #ff0000
+              `,
+              textShadow: `
+                0 0 1px #ff4040,
+                0 0 2px #ff0000
+              `,
+              fontFamily: "'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.boxShadow = `
+                0 0 3px #ff4040,
+                0 0 6px #ff4040,
+                0 0 9px #ff0000
+              `;
+              e.currentTarget.style.textShadow = `
+                0 0 2px #ff4040,
+                0 0 4px #ff0000
+              `;
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.background = 'rgba(255, 0, 0, 0.25)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.boxShadow = `
+                0 0 2px #ff4040,
+                0 0 4px #ff4040,
+                0 0 6px #ff0000
+              `;
+              e.currentTarget.style.textShadow = `
+                0 0 1px #ff4040,
+                0 0 2px #ff0000
+              `;
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.background = 'rgba(255, 0, 0, 0.15)';
+            }}
+          >
+            Delete Story
+          </button>
+          <button
+            onClick={() => navigate('/')}
+            style={{
+              padding: '0.6rem 1.2rem',
+              background: 'rgba(255, 192, 203, 0.15)',
+              color: '#ff69b4',
+              border: '2px solid #ff69b4',
+              borderRadius: '10px',
+              fontSize: '1.2rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: `
+                0 0 2px #ff69b4,
+                0 0 4px #ff69b4,
+                0 0 6px #ff1493
+              `,
+              textShadow: `
+                0 0 1px #ff69b4,
+                0 0 2px #ff1493
+              `,
+              fontFamily: "'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.boxShadow = `
+                0 0 3px #ff69b4,
+                0 0 6px #ff69b4,
+                0 0 9px #ff1493
+              `;
+              e.currentTarget.style.textShadow = `
+                0 0 2px #ff69b4,
+                0 0 4px #ff1493
+              `;
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.background = 'rgba(255, 192, 203, 0.25)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.boxShadow = `
+                0 0 2px #ff69b4,
+                0 0 4px #ff69b4,
+                0 0 6px #ff1493
+              `;
+              e.currentTarget.style.textShadow = `
+                0 0 1px #ff69b4,
+                0 0 2px #ff1493
+              `;
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.background = 'rgba(255, 192, 203, 0.15)';
+            }}
+          >
+            Back to Home
+          </button>
+        </div>
         <div style={{
           width: '90%',
           minHeight: '70vh',
