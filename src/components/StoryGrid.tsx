@@ -1,14 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import StoryModal from './StoryModal';
-
-interface Story {
-  id: string;
-  title: string;
-  content: string;
-  thumbnailUrl: string;
-  images: string[];
-  createdAt: string;
-}
+import { Story } from '../services/api';
 
 interface StoryGridProps {
   stories: Story[];
@@ -19,6 +11,9 @@ interface StoryGridProps {
 const StoryGrid: React.FC<StoryGridProps> = ({ stories, isDeleteMode = false, onStorySelect }) => {
   const [selectedStories, setSelectedStories] = useState<Set<string>>(new Set());
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
+
+  // Get the current theme from localStorage
+  const isLightMode = localStorage.getItem('isLightMode') === 'true';
 
   // Reset selected stories when delete mode changes
   useEffect(() => {
@@ -65,29 +60,78 @@ const StoryGrid: React.FC<StoryGridProps> = ({ stories, isDeleteMode = false, on
     return (
       <div style={{
         width: '100%',
-        padding: '1rem',
-        textAlign: 'center',
-        color: 'rgba(255, 255, 255, 0.7)'
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '3rem 1rem',
       }}>
-        No stories yet. Create your first story!
+        <div style={{
+          width: '120px',
+          height: '2px',
+          background: isLightMode ? 
+            'linear-gradient(to right, transparent, rgba(44, 24, 16, 0.2), rgba(44, 24, 16, 0.2), transparent)' :
+            'linear-gradient(to right, transparent, #FFB6C1, #87CEEB, transparent)',
+          margin: '0 auto 2.5rem auto',
+          borderRadius: '1px'
+        }} />
+        <div style={{
+          fontSize: '1.2rem',
+          color: isLightMode ? '#2C1810' : 'rgba(255, 255, 255, 0.8)',
+          fontFamily: 'Poppins, sans-serif',
+          fontWeight: '300',
+          textAlign: 'center',
+          lineHeight: '1.6',
+          maxWidth: '400px',
+          margin: '0 auto 2.5rem auto'
+        }}>
+          Create your first story and begin your journey of memories
+        </div>
+        <div style={{
+          width: '120px',
+          height: '2px',
+          background: isLightMode ? 
+            'linear-gradient(to right, transparent, rgba(44, 24, 16, 0.2), rgba(44, 24, 16, 0.2), transparent)' :
+            'linear-gradient(to right, transparent, #87CEEB, #FFB6C1, transparent)',
+          margin: '0 auto',
+          borderRadius: '1px'
+        }} />
       </div>
     );
   }
 
   return (
     <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&display=swap');
+          
+          .story-card-title {
+            word-break: keep-all;
+            overflow-wrap: break-word;
+          }
+          
+          .story-card-title:lang(ko) {
+            font-family: "Noto Sans KR", "Playfair Display", serif;
+            line-height: 1.5;
+            font-weight: 500;
+          }
+        `}
+      </style>
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 280px))',
         gap: '1.5rem',
         width: '100%',
         padding: '1rem',
         alignItems: 'stretch',
+        justifyContent: 'center',
         justifyItems: 'center',
       }}>
         {storyKeys.map((story) => {
           const thumbnailUrl = story.thumbnailUrl || (story.images && story.images.length > 0 ? story.images[0] : '');
           const isSelected = selectedStories.has(story.id);
+          const isKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(story.title || '');
           
           return (
             <div
@@ -98,7 +142,7 @@ const StoryGrid: React.FC<StoryGridProps> = ({ stories, isDeleteMode = false, on
                 borderRadius: '20px',
                 overflow: 'hidden',
                 border: isSelected && isDeleteMode 
-                  ? '2px solid #ff4444' 
+                  ? '2px solid #4682B4' 
                   : '1px solid rgba(255, 255, 255, 0.1)',
                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 cursor: isDeleteMode ? 'pointer' : 'pointer',
@@ -108,7 +152,7 @@ const StoryGrid: React.FC<StoryGridProps> = ({ stories, isDeleteMode = false, on
                 flexDirection: 'column',
                 height: '320px',
                 boxShadow: isSelected && isDeleteMode 
-                  ? '0 0 15px rgba(255, 68, 68, 0.5)' 
+                  ? '0 0 15px rgba(70, 130, 180, 0.5)' 
                   : '0 8px 20px rgba(0, 0, 0, 0.3)',
                 position: 'relative',
                 backdropFilter: 'blur(10px)',
@@ -137,8 +181,8 @@ const StoryGrid: React.FC<StoryGridProps> = ({ stories, isDeleteMode = false, on
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
-                  background: isSelected ? '#ff4444' : 'rgba(0, 0, 0, 0.7)',
-                  border: '2px solid ' + (isSelected ? '#ff4444' : '#ffffff'),
+                  background: isSelected ? '#4682B4' : 'rgba(0, 0, 0, 0.7)',
+                  border: '2px solid ' + (isSelected ? '#4682B4' : '#ffffff'),
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -146,7 +190,7 @@ const StoryGrid: React.FC<StoryGridProps> = ({ stories, isDeleteMode = false, on
                   fontSize: '16px',
                   fontWeight: 'bold',
                   boxShadow: isSelected 
-                    ? '0 0 10px rgba(255, 68, 68, 0.5)'
+                    ? '0 0 10px rgba(70, 130, 180, 0.5)'
                     : '0 0 10px rgba(255, 255, 255, 0.2)',
                   transition: 'all 0.3s ease',
                   zIndex: 2,
@@ -205,19 +249,22 @@ const StoryGrid: React.FC<StoryGridProps> = ({ stories, isDeleteMode = false, on
                 backdropFilter: 'blur(5px)',
                 WebkitBackdropFilter: 'blur(5px)',
               }}>
-                <h3 style={{
-                  margin: '0',
-                  color: '#fff',
-                  fontSize: '1.2rem',
-                  fontWeight: '600',
-                  fontFamily: 'Playfair Display, serif',
-                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  letterSpacing: '0.02em',
-                  lineHeight: '1.4',
-                }}>
+                <h3 
+                  className="story-card-title"
+                  lang={isKorean ? 'ko' : 'en'}
+                  style={{
+                    margin: '0',
+                    color: '#fff',
+                    fontSize: isKorean ? '1.1rem' : '1.2rem',
+                    fontWeight: '600',
+                    fontFamily: isKorean ? '"Noto Sans KR", "Playfair Display", serif' : 'Playfair Display, serif',
+                    textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    letterSpacing: isKorean ? '0' : '0.02em',
+                    lineHeight: '1.4',
+                  }}>
                   {story.title || 'Untitled Story'}
                 </h3>
                 {story.createdAt && (
