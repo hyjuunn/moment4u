@@ -85,7 +85,7 @@ const MainPage: React.FC = () => {
               marginBottom: '2.5rem',
               color: '#e5e5e5',
             }}>
-              "Upload up to 4 images to create your diary!"
+              "Upload up to 4 images to create your story!"
             </p>
           </div>
 
@@ -94,7 +94,7 @@ const MainPage: React.FC = () => {
               className="btn-primary"
               onClick={() => navigate('/dashboard')}
             >
-              Create Diary
+              Create Story
             </button>
           </div>
 
@@ -111,7 +111,7 @@ const MainPage: React.FC = () => {
           >
             <div>
               <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>4</h3>
-              <p style={{ margin: 0, fontSize: '0.9rem' }}>Images Per Diary</p>
+              <p style={{ margin: 0, fontSize: '0.9rem' }}>Images Per Story</p>
             </div>
             <div>
               <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>∞</h3>
