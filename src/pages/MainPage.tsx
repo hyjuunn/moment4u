@@ -1,9 +1,37 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/global.css';
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Create stars
+    const createStars = () => {
+      const container = document.querySelector('.stars-container');
+      if (!container) return;
+
+      // Clear existing stars
+      container.innerHTML = '';
+
+      // Create new stars
+      for (let i = 0; i < 100; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.animationDelay = `${Math.random() * 3}s`;
+        container.appendChild(star);
+      }
+    };
+
+    createStars();
+    window.addEventListener('resize', createStars);
+
+    return () => {
+      window.removeEventListener('resize', createStars);
+    };
+  }, []);
 
   return (
     <div className="container" style={{
@@ -12,10 +40,24 @@ const MainPage: React.FC = () => {
       alignItems: 'center',
       minHeight: '100vh',
       width: '100%',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
+      <div className="stars-container" style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
+      
       <div className="folder-container" style={{
         maxWidth: '800px',
         width: '100%',
+        position: 'relative',
+        zIndex: 1
       }}>
         <div style={{
           textAlign: 'center',
