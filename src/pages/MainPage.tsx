@@ -71,6 +71,7 @@ const MainPage: React.FC = () => {
                 letterSpacing: '0.1em',
                 marginBottom: '1.5rem',
                 lineHeight: '1.2',
+                fontFamily: 'Playfair Display, serif',
               }}
             >
               Moment4U
@@ -84,8 +85,11 @@ const MainPage: React.FC = () => {
               lineHeight: '1.6',
               marginBottom: '2.5rem',
               color: '#e5e5e5',
+              fontFamily: 'Poppins, sans-serif',
+              fontWeight: '300',
+              letterSpacing: '0.02em',
             }}>
-              "Upload up to 4 images to create your story!"
+              Upload up to 4 images to create your story
             </p>
           </div>
 
@@ -93,8 +97,13 @@ const MainPage: React.FC = () => {
             <button 
               className="btn-primary"
               onClick={() => navigate('/dashboard')}
+              style={{
+                fontFamily: 'Poppins, sans-serif',
+                fontWeight: '500',
+                letterSpacing: '0.05em',
+              }}
             >
-              Create Story
+              Create
             </button>
           </div>
 
@@ -107,19 +116,53 @@ const MainPage: React.FC = () => {
               gap: '2rem',
               animationDelay: '0.8s',
               opacity: 0.7,
+              fontFamily: 'Poppins, sans-serif',
             }}
           >
             <div>
-              <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>4</h3>
-              <p style={{ margin: 0, fontSize: '0.9rem' }}>Images Per Story</p>
+              <h3 style={{ 
+                margin: '0 0 0.5rem 0', 
+                fontSize: '1.5rem',
+                fontFamily: 'Playfair Display, serif',
+                fontWeight: '600',
+                letterSpacing: '0.02em',
+              }}>4</h3>
+              <p style={{ 
+                margin: 0, 
+                fontSize: '0.9rem',
+                fontWeight: '300',
+                letterSpacing: '0.05em',
+              }}>Images Per Story</p>
             </div>
             <div>
-              <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>∞</h3>
-              <p style={{ margin: 0, fontSize: '0.9rem' }}>Memories</p>
+              <h3 style={{ 
+                margin: '0 0 0.5rem 0', 
+                fontSize: '1.5rem',
+                fontFamily: 'Playfair Display, serif',
+                fontWeight: '600',
+                letterSpacing: '0.02em',
+              }}>∞</h3>
+              <p style={{ 
+                margin: 0, 
+                fontSize: '0.9rem',
+                fontWeight: '300',
+                letterSpacing: '0.05em',
+              }}>Memories</p>
             </div>
             <div>
-              <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>1</h3>
-              <p style={{ margin: 0, fontSize: '0.9rem' }}>Click to Create</p>
+              <h3 style={{ 
+                margin: '0 0 0.5rem 0', 
+                fontSize: '1.5rem',
+                fontFamily: 'Playfair Display, serif',
+                fontWeight: '600',
+                letterSpacing: '0.02em',
+              }}>1</h3>
+              <p style={{ 
+                margin: 0, 
+                fontSize: '0.9rem',
+                fontWeight: '300',
+                letterSpacing: '0.05em',
+              }}>Click to Create</p>
             </div>
           </div>
         </div>

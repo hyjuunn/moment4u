@@ -233,29 +233,21 @@ export const getAllStories = async (): Promise<Story[]> => {
 
     // Transform the API response to match our Story interface
     const stories: Story[] = rawData.map((story: any) => {
-      // Extract story ID from image URL if no ID is provided
-      let storyId = story.id || story.story_id;
-      if (!storyId && story.image_urls && story.image_urls.length > 0) {
-        const match = story.image_urls[0].match(/stories\/([^\/]+)/);
-        if (match && match[1]) {
-          storyId = match[1];
-        }
-      }
-
-      // Generate a unique ID if none is available
+      // Use _id from the API response
+      const storyId = story._id;
+      
       if (!storyId) {
-        const timestamp = Date.now();
-        const random = Math.floor(Math.random() * 10000);
-        storyId = `temp-${timestamp}-${random}`;
+        console.error('Story missing ID:', story);
+        throw new Error('Story from API is missing _id');
       }
 
       return {
         id: storyId,
-        title: story.title || story.story_title || '',
-        content: story.content || story.story_text || '',
-        thumbnailUrl: story.thumbnailUrl || (story.image_urls && story.image_urls.length > 0 ? story.image_urls[0] : ''),
-        images: story.images || story.image_urls || [],
-        createdAt: story.createdAt || story.created_at || new Date().toISOString()
+        title: story.story_title || '',
+        content: story.story_text || '',
+        thumbnailUrl: story.image_urls && story.image_urls.length > 0 ? story.image_urls[0] : '',
+        images: story.image_urls || [],
+        createdAt: story.created_at || new Date().toISOString()
       };
     });
 
@@ -268,12 +260,32 @@ export const getAllStories = async (): Promise<Story[]> => {
 };
 
 export const deleteStory = async (storyId: string): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/api/stories/${storyId}`, {
-    method: 'DELETE',
-  });
+  try {
+    console.log('Deleting story with ID:', storyId);
+    console.log('Delete URL:', `${API_BASE_URL}/api/v1/stories/${storyId}`);
+    
+    const response = await fetch(`${API_BASE_URL}/api/v1/stories/${storyId}`, {
+      method: 'DELETE',
+      headers: {
+        'accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to delete story');
+    // Log the raw response for debugging
+    const responseText = await response.text();
+    console.log('Delete response:', responseText);
+
+    if (!response.ok) {
+      console.error('Delete request failed with status:', response.status);
+      console.error('Error response:', responseText);
+      throw new Error(`Failed to delete story: ${response.status} ${responseText}`);
+    }
+
+    console.log('Story successfully deleted from API');
+  } catch (error) {
+    console.error('Error deleting story:', error);
+    throw error;
   }
 };
 

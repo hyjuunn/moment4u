@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import StoryModal from './StoryModal';
 
 interface Story {
   id: string;
@@ -11,9 +12,19 @@ interface Story {
 
 interface StoryGridProps {
   stories: Story[];
+  isDeleteMode?: boolean;
+  onStorySelect?: (storyId: string) => void;
 }
 
-const StoryGrid: React.FC<StoryGridProps> = ({ stories }) => {
+const StoryGrid: React.FC<StoryGridProps> = ({ stories, isDeleteMode = false, onStorySelect }) => {
+  const [selectedStories, setSelectedStories] = useState<Set<string>>(new Set());
+  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
+
+  // Reset selected stories when delete mode changes
+  useEffect(() => {
+    setSelectedStories(new Set());
+  }, [isDeleteMode]);
+
   // Generate stable keys for stories that persist across renders
   const storyKeys = useMemo(() => {
     return stories.map(story => ({
@@ -21,6 +32,34 @@ const StoryGrid: React.FC<StoryGridProps> = ({ stories }) => {
       key: story.id || `story-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     }));
   }, [stories]);
+
+  const handleStoryClick = (storyId: string) => {
+    if (isDeleteMode) {
+      if (onStorySelect) {
+        onStorySelect(storyId);
+      }
+      
+      setSelectedStories(prev => {
+        const newSelected = new Set(prev);
+        if (newSelected.has(storyId)) {
+          newSelected.delete(storyId);
+        } else {
+          newSelected.add(storyId);
+        }
+        return newSelected;
+      });
+    } else {
+      // Find and set the selected story for the modal
+      const story = stories.find(s => s.id === storyId);
+      if (story) {
+        setSelectedStory(story);
+      }
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedStory(null);
+  };
 
   if (!stories || stories.length === 0) {
     return (
@@ -36,94 +75,189 @@ const StoryGrid: React.FC<StoryGridProps> = ({ stories }) => {
   }
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-      gap: '1.5rem',
-      width: '100%',
-      padding: '1rem',
-      alignItems: 'stretch',
-      justifyItems: 'center',
-    }}>
-      {storyKeys.map((story) => {
-        const thumbnailUrl = story.thumbnailUrl || (story.images && story.images.length > 0 ? story.images[0] : '');
-        
-        return (
-          <div
-            key={story.key}
-            style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              borderRadius: '12px',
-              overflow: 'hidden',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-              cursor: 'pointer',
-              width: '100%',
-              maxWidth: '220px',
-              display: 'flex',
-              flexDirection: 'column',
-              height: '280px', // Reduced height
-            }}
-            onMouseOver={(e) => {
-              const target = e.currentTarget;
-              target.style.transform = 'translateY(-5px)';
-              target.style.boxShadow = '0 8px 16px rgba(255, 255, 255, 0.2)';
-            }}
-            onMouseOut={(e) => {
-              const target = e.currentTarget;
-              target.style.transform = 'translateY(0)';
-              target.style.boxShadow = 'none';
-            }}
-          >
-            <div style={{ height: '160px', width: '100%' }}> {/* Reduced image height */}
-              {thumbnailUrl && (
-                <img
-                  src={thumbnailUrl}
-                  alt={story.title || 'Story image'}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://via.placeholder.com/400x200?text=No+Image';
-                  }}
-                />
-              )}
-            </div>
-            <div style={{
-              padding: '0.75rem',
-              flexGrow: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between'
-            }}>
-              <h3 style={{
-                margin: '0',
-                color: '#fff',
-                fontSize: '1.1rem', // Slightly reduced font size
-                fontWeight: 'bold',
-                textShadow: '0 0 10px rgba(255, 255, 255, 0.5)',
+    <>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gap: '1.5rem',
+        width: '100%',
+        padding: '1rem',
+        alignItems: 'stretch',
+        justifyItems: 'center',
+      }}>
+        {storyKeys.map((story) => {
+          const thumbnailUrl = story.thumbnailUrl || (story.images && story.images.length > 0 ? story.images[0] : '');
+          const isSelected = selectedStories.has(story.id);
+          
+          return (
+            <div
+              key={story.key}
+              onClick={() => handleStoryClick(story.id)}
+              style={{
+                background: 'linear-gradient(145deg, rgba(26, 26, 26, 0.9), rgba(13, 13, 13, 0.9))',
+                borderRadius: '20px',
                 overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}>
-                {story.title || 'Untitled Story'}
-              </h3>
-              {story.createdAt && (
-                <p style={{
-                  margin: '0.5rem 0 0',
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  fontSize: '0.8rem', // Slightly reduced font size
+                border: isSelected && isDeleteMode 
+                  ? '2px solid #ff4444' 
+                  : '1px solid rgba(255, 255, 255, 0.1)',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                cursor: isDeleteMode ? 'pointer' : 'pointer',
+                width: '100%',
+                maxWidth: '280px',
+                display: 'flex',
+                flexDirection: 'column',
+                height: '320px',
+                boxShadow: isSelected && isDeleteMode 
+                  ? '0 0 15px rgba(255, 68, 68, 0.5)' 
+                  : '0 8px 20px rgba(0, 0, 0, 0.3)',
+                position: 'relative',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+              }}
+              onMouseOver={(e) => {
+                if (!isDeleteMode) {
+                  const target = e.currentTarget;
+                  target.style.transform = 'translateY(-10px)';
+                  target.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.4)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!isDeleteMode) {
+                  const target = e.currentTarget;
+                  target.style.transform = 'translateY(0)';
+                  target.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.3)';
+                }
+              }}
+            >
+              {isDeleteMode && (
+                <div style={{
+                  position: 'absolute',
+                  top: '15px',
+                  right: '15px',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  background: isSelected ? '#ff4444' : 'rgba(0, 0, 0, 0.7)',
+                  border: '2px solid ' + (isSelected ? '#ff4444' : '#ffffff'),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  boxShadow: isSelected 
+                    ? '0 0 10px rgba(255, 68, 68, 0.5)'
+                    : '0 0 10px rgba(255, 255, 255, 0.2)',
+                  transition: 'all 0.3s ease',
+                  zIndex: 2,
                 }}>
-                  {new Date(story.createdAt).toLocaleDateString()}
-                </p>
+                  {isSelected && '✓'}
+                </div>
               )}
+              <div style={{ 
+                height: '200px', 
+                width: '100%',
+                position: 'relative',
+                overflow: 'hidden',
+              }}>
+                {thumbnailUrl && (
+                  <img
+                    src={thumbnailUrl}
+                    alt={story.title || 'Story image'}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      transition: 'transform 0.4s ease',
+                    }}
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://via.placeholder.com/400x200?text=No+Image';
+                    }}
+                    onMouseOver={(e) => {
+                      if (!isDeleteMode) {
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!isDeleteMode) {
+                        e.currentTarget.style.transform = 'scale(1.0)';
+                      }
+                    }}
+                  />
+                )}
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)',
+                  height: '100px',
+                  pointerEvents: 'none',
+                }}/>
+              </div>
+              <div style={{
+                padding: '1.25rem',
+                flexGrow: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                background: 'linear-gradient(145deg, rgba(26, 26, 26, 0.8), rgba(13, 13, 13, 0.8))',
+                backdropFilter: 'blur(5px)',
+                WebkitBackdropFilter: 'blur(5px)',
+              }}>
+                <h3 style={{
+                  margin: '0',
+                  color: '#fff',
+                  fontSize: '1.2rem',
+                  fontWeight: '600',
+                  fontFamily: 'Playfair Display, serif',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  letterSpacing: '0.02em',
+                  lineHeight: '1.4',
+                }}>
+                  {story.title || 'Untitled Story'}
+                </h3>
+                {story.createdAt && (
+                  <div style={{
+                    marginTop: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                  }}>
+                    <span style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: '#FFB6C1',
+                      display: 'inline-block',
+                    }}/>
+                    <p style={{
+                      margin: 0,
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: '0.85rem',
+                      fontFamily: 'Poppins, sans-serif',
+                      fontWeight: '300',
+                      letterSpacing: '0.05em',
+                    }}>
+                      {new Date(story.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+      {selectedStory && (
+        <StoryModal
+          story={selectedStory}
+          onClose={handleCloseModal}
+        />
+      )}
+    </>
   );
 };
 
