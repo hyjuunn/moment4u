@@ -1,4 +1,12 @@
-const API_BASE_URL = 'http://googleml.kro.kr:8000'; // FastAPI server URL
+// Use environment variable with fallback for development
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://googleml.kro.kr:8000';
+
+// Add CORS headers to all requests
+const defaultHeaders = {
+  'Accept': 'application/json',
+  'Content-Type': 'application/json',
+  'Origin': window.location.origin
+};
 
 export interface ImageResponse {
   story_id: string;
