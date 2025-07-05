@@ -28,8 +28,6 @@ const CreateDiaryPage: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGeneratingStory, setIsGeneratingStory] = useState(false);
   const [generatedStory, setGeneratedStory] = useState<StoryGenerationResponse | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [showError, setShowError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedStories, setSelectedStories] = useState<Set<string>>(new Set());
@@ -128,21 +126,6 @@ const CreateDiaryPage: React.FC = () => {
     document.body.style.backgroundColor = isLightMode ? '#faf4f7' : '#121212';
   }, [isLightMode]);
 
-  useEffect(() => {
-    let errorTimer: NodeJS.Timeout;
-    
-    if (showError) {
-      errorTimer = setTimeout(() => {
-        setShowError(false);
-        setErrorMessage('');
-      }, 3000);
-    }
-
-    return () => {
-      clearTimeout(errorTimer);
-    };
-  }, [showError]);
-
   const fetchStories = async () => {
     try {
       const fetchedStories = await getAllStories();
@@ -193,15 +176,6 @@ const CreateDiaryPage: React.FC = () => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    if (files.length > 4) {
-      setErrorMessage('You can only upload up to 4 images at once');
-      setShowError(true);
-      if (event.target) {
-        event.target.value = ''; // Reset file input
-      }
-      return;
-    }
-
     try {
       setIsUploading(true);
       const uploadedImages = await uploadImages(Array.from(files));
@@ -232,8 +206,7 @@ const CreateDiaryPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to generate story:', error);
-      setErrorMessage('An error occurred while processing your images');
-      setShowError(true);
+      // Handle error appropriately
     } finally {
       setIsUploading(false);
       if (event.target) {
@@ -578,17 +551,6 @@ const CreateDiaryPage: React.FC = () => {
                 50% { opacity: 1; }
                 100% { opacity: 0.3; }
               }
-
-              @keyframes slideDown {
-                0% {
-                  transform: translate(-50%, -100%);
-                  opacity: 0;
-                }
-                100% {
-                  transform: translate(-50%, 0);
-                  opacity: 1;
-                }
-              }
             `}
           </style>
 
@@ -616,51 +578,6 @@ const CreateDiaryPage: React.FC = () => {
           />
         )}
       </div>
-
-      {/* Error Message Popup */}
-      {showError && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 1000,
-            padding: '15px 25px',
-            borderRadius: '12px',
-            background: isLightMode 
-              ? 'linear-gradient(135deg, #ff6b6b, #ff8787)'
-              : 'linear-gradient(135deg, #2c3e50, #3498db)',
-            color: '#ffffff',
-            boxShadow: isLightMode
-              ? '0 4px 15px rgba(255, 107, 107, 0.3)'
-              : '0 4px 15px rgba(44, 62, 80, 0.3)',
-            fontFamily: 'Poppins, sans-serif',
-            fontSize: '1rem',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            animation: 'slideDown 0.3s ease-out',
-          }}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          {errorMessage}
-        </div>
-      )}
     </div>
   );
 };
